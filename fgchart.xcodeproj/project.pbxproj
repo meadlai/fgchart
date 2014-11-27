@@ -14,6 +14,10 @@
 		0DD9E7BD1A26D0A00004F9AD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DD9E7BC1A26D0A00004F9AD /* Images.xcassets */; };
 		0DD9E7C01A26D0A00004F9AD /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0DD9E7BE1A26D0A00004F9AD /* LaunchScreen.xib */; };
 		0DD9E7CC1A26D0A00004F9AD /* fgchartTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7CB1A26D0A00004F9AD /* fgchartTests.m */; };
+		0DD9E7DE1A26D0C50004F9AD /* FGBarChart.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7D71A26D0C50004F9AD /* FGBarChart.m */; };
+		0DD9E7DF1A26D0C50004F9AD /* FGChart.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7D91A26D0C50004F9AD /* FGChart.m */; };
+		0DD9E7E01A26D0C50004F9AD /* FGLineChart.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7DB1A26D0C50004F9AD /* FGLineChart.m */; };
+		0DD9E7E11A26D0C50004F9AD /* FGPieChart.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7DD1A26D0C50004F9AD /* FGPieChart.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +44,14 @@
 		0DD9E7C51A26D0A00004F9AD /* fgchartTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = fgchartTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DD9E7CA1A26D0A00004F9AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0DD9E7CB1A26D0A00004F9AD /* fgchartTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = fgchartTests.m; sourceTree = "<group>"; };
+		0DD9E7D61A26D0C50004F9AD /* FGBarChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FGBarChart.h; sourceTree = "<group>"; };
+		0DD9E7D71A26D0C50004F9AD /* FGBarChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FGBarChart.m; sourceTree = "<group>"; };
+		0DD9E7D81A26D0C50004F9AD /* FGChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FGChart.h; sourceTree = "<group>"; };
+		0DD9E7D91A26D0C50004F9AD /* FGChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FGChart.m; sourceTree = "<group>"; };
+		0DD9E7DA1A26D0C50004F9AD /* FGLineChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FGLineChart.h; sourceTree = "<group>"; };
+		0DD9E7DB1A26D0C50004F9AD /* FGLineChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FGLineChart.m; sourceTree = "<group>"; };
+		0DD9E7DC1A26D0C50004F9AD /* FGPieChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FGPieChart.h; sourceTree = "<group>"; };
+		0DD9E7DD1A26D0C50004F9AD /* FGPieChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FGPieChart.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +93,7 @@
 		0DD9E7AE1A26D0A00004F9AD /* fgchart */ = {
 			isa = PBXGroup;
 			children = (
+				0DD9E7D51A26D0C50004F9AD /* chart */,
 				0DD9E7B31A26D0A00004F9AD /* AppDelegate.h */,
 				0DD9E7B41A26D0A00004F9AD /* AppDelegate.m */,
 				0DD9E7B61A26D0A00004F9AD /* ViewController.h */,
@@ -117,6 +130,21 @@
 				0DD9E7CA1A26D0A00004F9AD /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0DD9E7D51A26D0C50004F9AD /* chart */ = {
+			isa = PBXGroup;
+			children = (
+				0DD9E7D61A26D0C50004F9AD /* FGBarChart.h */,
+				0DD9E7D71A26D0C50004F9AD /* FGBarChart.m */,
+				0DD9E7D81A26D0C50004F9AD /* FGChart.h */,
+				0DD9E7D91A26D0C50004F9AD /* FGChart.m */,
+				0DD9E7DA1A26D0C50004F9AD /* FGLineChart.h */,
+				0DD9E7DB1A26D0C50004F9AD /* FGLineChart.m */,
+				0DD9E7DC1A26D0C50004F9AD /* FGPieChart.h */,
+				0DD9E7DD1A26D0C50004F9AD /* FGPieChart.m */,
+			);
+			path = chart;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -219,9 +247,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0DD9E7E11A26D0C50004F9AD /* FGPieChart.m in Sources */,
 				0DD9E7B81A26D0A00004F9AD /* ViewController.m in Sources */,
 				0DD9E7B51A26D0A00004F9AD /* AppDelegate.m in Sources */,
 				0DD9E7B21A26D0A00004F9AD /* main.m in Sources */,
+				0DD9E7DE1A26D0C50004F9AD /* FGBarChart.m in Sources */,
+				0DD9E7DF1A26D0C50004F9AD /* FGChart.m in Sources */,
+				0DD9E7E01A26D0C50004F9AD /* FGLineChart.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -414,6 +446,7 @@
 				0DD9E7D11A26D0A00004F9AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0DD9E7D21A26D0A00004F9AD /* Build configuration list for PBXNativeTarget "fgchartTests" */ = {
 			isa = XCConfigurationList;
@@ -422,6 +455,7 @@
 				0DD9E7D41A26D0A00004F9AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
