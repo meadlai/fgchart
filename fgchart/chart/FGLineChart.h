@@ -19,16 +19,27 @@ typedef UIView *(^FGViewForTip)(CGFloat value);
     
 }
 
+
 //axis步进-切分
 @property (nonatomic, readwrite) int stepVertical;
 @property (nonatomic, readwrite) int stepHorizontal;
 
 #pragma mark 颜色定义
+@property (nonatomic, readwrite) CGFloat margin;
 //线条颜色
 @property (nonatomic, copy) UIColor* colorLine;
 //填充颜色(默认填充,除非设为nil)
 @property (nonatomic, copy) UIColor* colorFill;
 @property (nonatomic, copy) UIColor* colorBackground;
+//轴颜色 & 宽度
+@property (nonatomic, copy) UIColor* axisColor;
+@property (nonatomic, readwrite) CGFloat axisLineWidth;
+@property (nonatomic, readonly) CGFloat axisWidth;
+@property (nonatomic, readonly) CGFloat axisHeight;
+//网格线
+@property (nonatomic, readwrite) BOOL gridInside;
+@property (nonatomic, copy) UIColor* gridInsideColor;
+@property (nonatomic, readwrite) CGFloat gridInsideWidth;
 
 
 #pragma mark 动画定义
@@ -46,9 +57,7 @@ typedef UIView *(^FGViewForTip)(CGFloat value);
 @property (copy) FGViewForTip tipView;
 
 - (void)setDataList:(NSArray *)date;
-
 - (void)setDataMap:(NSDictionary *)date;
-
 - (void)reload:(CGFloat)animationDuration;
 
 @property (nonatomic, readwrite) BOOL debug;

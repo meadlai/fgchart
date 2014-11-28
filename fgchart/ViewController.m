@@ -10,7 +10,7 @@
 #import "FGChart.h"
 #import "FGLineChart.h"
 
-#define UI_Padding_Top 16
+#define UI_Padding_Top 30
 #define UI_Screen_width [UIScreen mainScreen].bounds.size.width
 
 #define UI_Screen_height [UIScreen mainScreen].bounds.size.height
@@ -35,13 +35,16 @@
     FGLineChart *chart = [[FGLineChart alloc] init];
     chart.debug = YES;
     //
-    chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width,200);
+    chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
+    NSLog(@"_viewWidth = %f",UI_Screen_width-UI_Padding_Top*2);
+
     
     NSMutableArray* chartData = [NSMutableArray arrayWithCapacity:10];
-    
+
     for(int i=0;i<10;i++) {
         int r = (rand() + rand()) % 1000;
-        chartData[i] = [NSNumber numberWithInt:r + 200];
+        r = abs(r);
+        chartData[i] = [NSNumber numberWithInt:r + 100];
     }
     
     [chart setDataList:chartData];
