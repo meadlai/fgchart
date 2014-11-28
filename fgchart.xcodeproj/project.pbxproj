@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D1F0DBE1A28468F00613E90 /* UIBezierPathDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D1F0DBD1A28468F00613E90 /* UIBezierPathDemo.m */; };
 		0DD9E7B21A26D0A00004F9AD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7B11A26D0A00004F9AD /* main.m */; };
 		0DD9E7B51A26D0A00004F9AD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7B41A26D0A00004F9AD /* AppDelegate.m */; };
 		0DD9E7B81A26D0A00004F9AD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DD9E7B71A26D0A00004F9AD /* ViewController.m */; };
@@ -31,6 +32,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0D1F0DBC1A28468F00613E90 /* UIBezierPathDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIBezierPathDemo.h; sourceTree = "<group>"; };
+		0D1F0DBD1A28468F00613E90 /* UIBezierPathDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIBezierPathDemo.m; sourceTree = "<group>"; };
 		0DD9E7AC1A26D0A00004F9AD /* fgchart.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fgchart.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DD9E7B01A26D0A00004F9AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0DD9E7B11A26D0A00004F9AD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -102,6 +105,8 @@
 				0DD9E7BC1A26D0A00004F9AD /* Images.xcassets */,
 				0DD9E7BE1A26D0A00004F9AD /* LaunchScreen.xib */,
 				0DD9E7AF1A26D0A00004F9AD /* Supporting Files */,
+				0D1F0DBC1A28468F00613E90 /* UIBezierPathDemo.h */,
+				0D1F0DBD1A28468F00613E90 /* UIBezierPathDemo.m */,
 			);
 			path = fgchart;
 			sourceTree = "<group>";
@@ -253,6 +258,7 @@
 				0DD9E7B21A26D0A00004F9AD /* main.m in Sources */,
 				0DD9E7DE1A26D0C50004F9AD /* FGBarChart.m in Sources */,
 				0DD9E7DF1A26D0C50004F9AD /* FGChart.m in Sources */,
+				0D1F0DBE1A28468F00613E90 /* UIBezierPathDemo.m in Sources */,
 				0DD9E7E01A26D0C50004F9AD /* FGLineChart.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

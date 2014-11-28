@@ -21,6 +21,7 @@
     CGFloat height;
     CGFloat scale;
 }
+//私有函数
 //初始化默认参数
 - (void)loadParameters;
 //画网格
@@ -28,8 +29,9 @@
 //画图
 - (void)renderChart;
 //画贝塞尔曲线
-- (UIBezierPath*)renderBezierLine:(float)scale withSmoothing:(BOOL)smoothed close:(BOOL)closed;
-
+- (UIBezierPath*)renderBezierLine:(BOOL)smoothed close:(BOOL)closed;
+//画标签
+- (void)renderTag;
 @end
 
 @implementation FGLineChart
@@ -63,6 +65,7 @@
     //
     _colorLine = [FGChart ColorLightBlue];
     _colorFill = [[FGChart ColorLightBlue] colorWithAlphaComponent:.25];
+    _colorFill = nil;
     //
     _animation = YES;
     _animationDuration = 1.3f;
@@ -91,12 +94,16 @@
     _axisWidth = width - 2 * _margin;
     _axisHeight = height - 2 * _margin;
     
-    _dataX = [NSMutableArray arrayWithArray:data];
-    _dataY = [NSMutableArray array];
-    //
+    _dataY = [NSMutableArray arrayWithArray:data];
+    _dataX = [NSMutableArray array];
+    //计算边距
     [self computeSteps];
-    //
+    //画-线条
     [self renderChart];
+    //画-标签tag
+    [self renderTag];
+    //重绘
+    [self setNeedsDisplay];
     
 }
 
@@ -107,10 +114,14 @@
     _dataX = [NSMutableArray array];
     _dataY = [NSMutableArray array];
     
-    //
+    //计算边距
     [self computeSteps];
-    //
+    //画-线条
     [self renderChart];
+    //画-标签tag
+    [self renderTag];
+    //重绘
+    [self setNeedsDisplay];
 }
 
 - (void)reload:(CGFloat)animationDuration{
@@ -120,6 +131,36 @@
 #pragma mark
 #pragma mark 画图
 - (void)renderChart{
+    UIBezierPath *path = [UIBezierPath bezierPath];
+//    UIBezierPath* fill = [UIBezierPath bezierPath];
+    path = [self renderBezierLine:_bezierSmoothing close:NO];
+//    fill = [self renderBezierLine:_bezierSmoothing close:YES];
+    
+    CAShapeLayer *layer = [CAShapeLayer layer];
+    //绘线
+    if(_colorFill) {
+        
+        
+    }else{
+        layer.frame = CGRectMake(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
+        layer.path = path.CGPath;
+        layer.fillColor = nil;
+        layer.strokeColor = _colorLine.CGColor;
+        [self.layer addSublayer:layer];
+    }
+    
+    //动画效果
+    if(_colorFill) {
+        
+    } else {
+        CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
+        pathAnimation.duration = _animationDuration;
+        pathAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        pathAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+        pathAnimation.toValue = [NSNumber numberWithFloat:1.0f];
+        [layer addAnimation:pathAnimation forKey:@"path"];
+    }
+
     
 }
 
@@ -141,15 +182,14 @@
     CGContextMoveToPoint(ctx, _margin, _axisHeight + _margin);
     CGContextAddLineToPoint(ctx, _axisWidth + _margin , _axisHeight + _margin);
     CGContextStrokePath(ctx);
-    NSLog(@"x轴.x = %f,  x轴.y = %f",_axisWidth + _margin ,_axisHeight + _margin);
 
     
     if (_gridInside) {
         CGFloat avg = _axisWidth / _stepHorizontal;
         if (_debug) {
-            NSLog(@"_axisWidth = %f",_axisWidth);
-            NSLog(@"_stepHorizontal = %d",_stepHorizontal);
-            NSLog(@"avg = %f",avg);
+//            NSLog(@"_axisWidth = %f",_axisWidth);
+//            NSLog(@"_stepHorizontal = %d",_stepHorizontal);
+//            NSLog(@"avg = %f",avg);
         }
 
         //画y轴平行的innner线
@@ -179,14 +219,115 @@
 
 }
 
+- (UIBezierPath*)renderBezierLine:(BOOL)smoothed close:(BOOL)closed{
+    UIBezierPath* path = [[UIBezierPath alloc] init];
+    if (smoothed) {
+        //曲线图
+        //光滑度控制
+        CGPoint controlPoint[2];
+        // 下一节点,上一节点,中间节点,当前节点
+        CGPoint nextPoint, previousPoint, middlePoint, point;
+        
+        
+        for(int i=0;i<_dataY.count - 1;i++) {
+            
+            point = [self getPointForIndex:i];
+            if(i == 0){
+                //起点
+                [path moveToPoint:point];
+            }
+            
+            //计算第一个控制点
+            nextPoint = [self getPointForIndex:i + 1];
+            previousPoint = [self getPointForIndex:i - 1];
+            middlePoint = CGPointZero;
+            if(i > 0) {
+                middlePoint.x = (nextPoint.x - previousPoint.x) / 2;
+                middlePoint.y = (nextPoint.y - previousPoint.y) / 2;
+            }else{
+                middlePoint.x = (nextPoint.x - point.x) / 2;
+                middlePoint.y = (nextPoint.y - point.y) / 2;
+            }
+            controlPoint[0].x = point.x + middlePoint.x * _bezierSmoothingTension;
+            controlPoint[0].y = point.y + middlePoint.y * _bezierSmoothingTension;
+            
+            //计算第二个控制点
+            point = [self getPointForIndex:i+1];
+            nextPoint = [self getPointForIndex:i + 2];
+            previousPoint = [self getPointForIndex:i];
+            middlePoint = CGPointZero;
+            if(i < _dataY.count - 2) {
+                middlePoint.x = (nextPoint.x - previousPoint.x) / 2;
+                middlePoint.y = (nextPoint.y - previousPoint.y) / 2;
+            } else {
+                middlePoint.x = (point.x - previousPoint.x) / 2;
+                middlePoint.y = (point.y - previousPoint.y) / 2;
+            }
+            controlPoint[1].x = point.x + middlePoint.x * _bezierSmoothingTension;
+            controlPoint[1].y = point.y + middlePoint.y * _bezierSmoothingTension;
 
+            //画线
+            [path addCurveToPoint:point controlPoint1:controlPoint[0] controlPoint2:controlPoint[1]];
+        }
+    }else{//_END_OF_曲线图
+        //折线图
+        for(int i=0;i<_dataY.count;i++) {
+            if(i == 0){
+                //起点
+                [path moveToPoint:[self getPointForIndex:i]];
+            }else{
+                //画线
+                [path addLineToPoint:[self getPointForIndex:i]];
+            }
+        }
+    }//_END_OF_smoothed
+    
+    if(closed) {
+        // 闭合曲线
+        CGPoint final = [self getPointForIndex:_data.count - 1];
+        CGPoint start = [self getPointForIndex:0];
 
-- (UIBezierPath*)renderBezierLine:(float)scale withSmoothing:(BOOL)smoothed close:(BOOL)closed{
-    return nil;
+        [path addLineToPoint:final];
+        [path addLineToPoint:start];
+    }
+
+    return path;
+}
+
+- (void)renderTag{
+    
 }
 
 #pragma mark
 #pragma mark 计算方法
+//获取取点,换算
+- (CGPoint)getPointForIndex:(NSInteger)idx{
+    
+    if(idx < 0 || idx >= _dataX.count){
+        //取控制点,可能会返回-1
+        return CGPointMake(_margin, _margin);
+    }
+    //_maxX / _axisWidth = valX / point.x
+    CGFloat scaleX = _maxX / _axisWidth;
+    //_maxY / _axisHeight = valY / point.y
+    CGFloat scaleY = _maxY / _axisHeight;
+    
+    //
+    if(_dataY && _dataY.count>0){
+        CGFloat numberX = [_dataX[idx] floatValue];
+        CGFloat numberY = [_dataY[idx] floatValue];
+        CGPoint point = CGPointMake(numberX/scaleX + _margin, numberY/scaleY + _margin);
+        if (_debug) {
+            NSLog(@"获取相对点,point.x = %f, point.y = %f",point.x,point.y);
+        }
+        return point;
+    }
+//    CGFloat avgX = _axisWidth / _stepHorizontal;
+//    CGFloat avgY = _axisHeight / _stepVertical;
+//    CGPoint point = CGPointMake(avgX*idx + _margin, avgY*idx + _margin);
+    return CGPointMake(_margin, _margin);;
+}
+
 //计算边距
 - (void) computeSteps{
     _minY = MAXFLOAT;
@@ -214,16 +355,23 @@
                 _maxX = [key floatValue];
             }
         }
-    }else if(_dataX){
-        for (id key in _dataX) {
+    }else if(_dataY && _dataY.count>0){
+        int x = 0;
+        CGFloat avg = _axisWidth / _stepHorizontal;
+        for (id key in _dataY) {
             if ([key floatValue] < _minY) {
                 _minY = [key floatValue];
             }
             if ([key floatValue] > _maxY) {
                 _maxY = [key floatValue];
             }
+            //
+            [_dataX addObject:[NSNumber numberWithFloat:x*avg]];
+            x ++;
         }
-
+        //没有x值,则按照等均分布
+        _minX = _margin;
+        _maxX = _margin + x*avg;
     }else{
         @throw [NSException
                 exceptionWithName:@"无法初始化"
@@ -233,7 +381,7 @@
     
     if (_debug) {
         NSLog(@"_minY = %f,_maxY = %f",_minY,_maxY);
-        //NSLog(@"_minX = %f,_minX = %f",_minX,_maxX);
+        NSLog(@"_minX = %f,_minX = %f",_minX,_maxX);
     }
     
     NSDictionary *vertResult = [self roundStep:_stepVertical max:_maxY min:_minY];
@@ -263,6 +411,7 @@
         [result setValue:[NSNumber numberWithFloat:0.0f] forKey:@"min"];
     }
     
+    //获取iScale度量区间,10,100,1000?
     CGFloat logValue = log10f(delta);
     CGFloat iscale = powf(10, floorf(logValue));
     CGFloat temp = max / iscale;

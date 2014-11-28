@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "FGChart.h"
 #import "FGLineChart.h"
+#import "UIBezierPathDemo.h"
 
 #define UI_Padding_Top 30
 #define UI_Screen_width [UIScreen mainScreen].bounds.size.width
@@ -25,6 +26,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self testLineChart];
+    [self testBezierLine];
 }
 
 - (void)testLineChart{
@@ -36,8 +38,6 @@
     chart.debug = YES;
     //
     chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
-    NSLog(@"_viewWidth = %f",UI_Screen_width-UI_Padding_Top*2);
-
     
     NSMutableArray* chartData = [NSMutableArray arrayWithCapacity:10];
 
@@ -49,6 +49,12 @@
     
     [chart setDataList:chartData];
     [self.view addSubview:chart];
+}
+
+- (void)testBezierLine{
+    UIBezierPathDemo *line = [[UIBezierPathDemo alloc] init];
+    line.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top*3+200, UI_Screen_width-UI_Padding_Top*2, 200);
+    [self.view addSubview:line];
 }
 
 - (void)didReceiveMemoryWarning {
