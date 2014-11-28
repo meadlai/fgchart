@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface FGChart : NSObject
 
@@ -22,5 +22,8 @@
 + (UIColor*) ColorPink;
 + (UIColor*) ColorDarkGray;
 + (UIColor*) ColorLightGray;
+
+//
++ (NSDictionary*) roundStep:(int)step max:(CGFloat)max min:(CGFloat)min;
 
 @end

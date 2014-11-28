@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
-@interface FGPieChart : NSObject
+@interface FGPieChart : UIView{
+    
+}
 
 @end
