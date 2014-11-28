@@ -22,12 +22,29 @@
     if (self) {
         //Initialization code
         points = [[NSMutableArray alloc] init];
-        
         self.backgroundColor = [UIColor whiteColor];
-        ((CAShapeLayer *)self.layer).fillColor = nil;
-        ((CAShapeLayer *)self.layer).strokeColor = [UIColor blackColor].CGColor;
+        ((CAShapeLayer *)self.layer).fillColor=[UIColor blackColor].CGColor;
+        
+//        ((CAShapeLayer *)self.layer).fillColor = nil;
+//        ((CAShapeLayer *)self.layer).strokeColor = [UIColor blackColor].CGColor;
+        [self circleTest:20];
     }
     return self;
+}
+
+- (void)circleTest:(CGFloat)percent{
+    CGPoint arcCenter=self.center;
+    UIBezierPath *path=[UIBezierPath
+                        bezierPathWithArcCenter:arcCenter
+                        radius:20
+                        startAngle:M_PI
+                        endAngle:M_PI+percent
+                        clockwise:YES];
+    [path addLineToPoint:self.center];
+    [path closePath];
+    
+    ((CAShapeLayer *)self.layer).path = path.CGPath;
+
 }
 
 - (void)updatePaths
@@ -59,7 +76,7 @@
     CGPoint point = [touch locationInView:self];
     [points addObject:[NSValue valueWithCGPoint:point]];
     
-    [self updatePaths];
+    //[self updatePaths];
 }
 
 @end
