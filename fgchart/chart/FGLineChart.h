@@ -11,8 +11,13 @@
 #import <UIKit/UIKit.h>
 #import "FGChart.h"
 
+//点击提示
 typedef NSString *(^FGLabelForTip)(CGFloat value);
 typedef UIView *(^FGViewForTip)(CGFloat value);
+
+//axis轴
+typedef NSString *(^FGLabelForHorizontal)(CGFloat index);
+typedef NSString *(^FGLabelForVertical)(CGFloat value);
 
 
 @interface FGLineChart : UIView{
@@ -53,8 +58,16 @@ typedef UIView *(^FGViewForTip)(CGFloat value);
 #pragma mark 交互定义
 @property (nonatomic, readwrite) BOOL touchInteraction;
 //点击提示
-@property (copy) FGLabelForTip tipLabel;
-@property (copy) FGViewForTip tipView;
+@property (copy) FGLabelForTip labelTip;
+@property (copy) FGViewForTip viewTip;
+@property (copy) FGLabelForHorizontal labelHorizontal;
+@property (copy) FGLabelForVertical labelVertical;
+@property (nonatomic, readwrite) BOOL labelRight;
+@property (nonatomic, strong) UIFont* labelFont;
+@property (nonatomic, copy) UIColor* labelFontColor;
+
+
+
 
 - (void)setDataList:(NSArray *)date;
 - (void)setDataMap:(NSDictionary *)date;

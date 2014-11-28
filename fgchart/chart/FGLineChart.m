@@ -31,7 +31,7 @@
 //画贝塞尔曲线
 - (UIBezierPath*)renderBezierLine:(BOOL)smoothed close:(BOOL)closed;
 //画标签
-- (void)renderTag;
+- (void)renderLabel;
 @end
 
 @implementation FGLineChart
@@ -84,7 +84,10 @@
     _gridInside = YES;
     _gridInsideColor = [UIColor colorWithWhite:0.9 alpha:1.0];
     _gridInsideWidth = 0.5;
-
+    //
+    _labelFont = [UIFont systemFontOfSize:14.0f];
+    _labelFontColor = [UIColor grayColor];
+    _labelRight = NO;
 }
 
 #pragma mark 调用方法
@@ -101,7 +104,7 @@
     //画-线条
     [self renderChart];
     //画-标签tag
-    [self renderTag];
+    [self renderLabel];
     //重绘
     [self setNeedsDisplay];
     
@@ -119,7 +122,7 @@
     //画-线条
     [self renderChart];
     //画-标签tag
-    [self renderTag];
+    [self renderLabel];
     //重绘
     [self setNeedsDisplay];
 }
@@ -294,8 +297,66 @@
     return path;
 }
 
-- (void)renderTag{
+- (void)renderLabel{
+    if(_labelVertical) {
+        for(int i=0;i<_stepVertical;i++) {
+            CGPoint p = CGPointMake(_margin + (_labelRight ? _axisWidth : 0), _axisHeight + _margin - (i + 1) * _axisHeight / _stepVertical);
+            
+            NSString* text = _labelVertical(_axisWidth / _stepVertical * (i + 1));
+            
+            if(!text){
+                continue;
+            }
+            
+            CGRect rect = CGRectMake(_margin, p.y + 2, self.frame.size.width - _margin * 2 - 4.0f, 14);
+            
+            float fontwidth =
+            [text
+             boundingRectWithSize:rect.size
+             options:NSStringDrawingUsesLineFragmentOrigin
+             attributes:@{ NSFontAttributeName:_labelFont }
+             context:nil]
+            .size.width;
+            
+            CGRect lrect = CGRectMake(p.x - fontwidth - 6, p.y + 2, fontwidth + 2, 14);
+            UILabel* label = [[UILabel alloc] init];
+            label.frame = lrect;
+            label.text = text;
+            label.font = _labelFont;
+            label.textColor = _labelFontColor;
+            label.textAlignment = NSTextAlignmentCenter;
+//            label.backgroundColor = _valueLabelBackgroundColor;
+            [self addSubview:label];
+        }
+    }
     
+    //x轴标签
+    if(_labelHorizontal) {
+        
+        for(int i = 0; i < _stepHorizontal + 1; i++) {
+            NSString* text = _labelHorizontal(i);
+            if(!text)
+                continue;
+            
+            CGPoint p = CGPointMake(_margin + i * (_axisWidth / _stepHorizontal), _axisHeight + _margin);
+            
+            CGRect rect = CGRectMake(_margin, p.y + 2, self.frame.size.width - _margin * 2 - 4.0f, 14);
+            
+            float iwidth =
+            [text
+             boundingRectWithSize:rect.size
+             options:NSStringDrawingUsesLineFragmentOrigin
+             attributes:@{ NSFontAttributeName:_labelFont }
+             context:nil]
+            .size.width;
+            
+            UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(p.x - 4.0f, p.y + 2, iwidth + 2, 14)];
+            label.text = text;
+            label.font = _labelFont;
+            label.textColor = _labelFontColor;
+            [self addSubview:label];
+        }
+    }
 }
 
 #pragma mark

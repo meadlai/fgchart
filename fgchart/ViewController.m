@@ -36,6 +36,16 @@
     
     FGLineChart *chart = [[FGLineChart alloc] init];
     chart.debug = YES;
+    chart.stepHorizontal = 10;
+    chart.labelVertical = ^(CGFloat item) {
+        return [NSString stringWithFormat:@"%lu",(unsigned long)item];
+    };
+    
+    chart.labelHorizontal = ^(CGFloat item) {
+        return [NSString stringWithFormat:@"%lu",(unsigned long)item];
+    };
+
+
     //
     chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
     
@@ -46,7 +56,6 @@
         r = abs(r);
         chartData[i] = [NSNumber numberWithInt:r + 100];
     }
-//    chart.bezierSmoothing = NO;
     [chart setDataList:chartData];
     [self.view addSubview:chart];
 }
