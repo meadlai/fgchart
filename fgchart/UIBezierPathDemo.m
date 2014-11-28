@@ -7,6 +7,7 @@
 //
 
 #import "UIBezierPathDemo.h"
+#define   DEGREES_TO_RADIANS(degrees)  ((M_PI * degrees)/ 180)
 
 @implementation UIBezierPathDemo
 
@@ -33,17 +34,46 @@
 }
 
 - (void)circleTest:(CGFloat)percent{
-    CGPoint arcCenter=self.center;
-    UIBezierPath *path=[UIBezierPath
-                        bezierPathWithArcCenter:arcCenter
-                        radius:20
-                        startAngle:M_PI
-                        endAngle:M_PI+percent
-                        clockwise:YES];
-    [path addLineToPoint:self.center];
-    [path closePath];
+    CGFloat radius = 100;
     
-    ((CAShapeLayer *)self.layer).path = path.CGPath;
+    CGFloat starttime = M_PI/6; //1 pm = 1/6 rad
+    CGFloat endtime = M_PI;  //6 pm = 1 rad
+    
+    //draw arc
+    CGPoint center = CGPointMake(radius,radius);
+    UIBezierPath *arc = [UIBezierPath bezierPath]; //empty path
+    [arc moveToPoint:center];
+    CGPoint next;
+    next.x = center.x + radius * cos(starttime);
+    next.y = center.y + radius * sin(starttime);
+    [arc addLineToPoint:next]; //go one end of arc
+    [arc addArcWithCenter:center radius:radius startAngle:starttime endAngle:endtime clockwise:YES]; //add the arc
+    [arc addLineToPoint:center]; //back to center
+    
+    ((CAShapeLayer *)self.layer).path = arc.CGPath;
+    ((CAShapeLayer *)self.layer).fillColor = [[UIColor colorWithRed:0.18f green:0.67f blue:0.84f alpha:1.0f] CGColor];
+    
+    CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
+    pathAnimation.duration = 2.0;
+    pathAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    pathAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+    pathAnimation.toValue = [NSNumber numberWithFloat:1.0f];
+    [((CAShapeLayer *)self.layer) addAnimation:pathAnimation forKey:@"path"];
+    
+    
+//    UIBezierPath *aPath = [UIBezierPath bezierPathWithArcCenter:CGPointMake(radius, radius)
+//                                                         radius:radius
+//                                                     startAngle:0
+//                                                       endAngle:DEGREES_TO_RADIANS(90)
+//                                                      clockwise:YES];
+//    [aPath addLineToPoint:center]; //back to center
+//
+//    [aPath fill];
+    
+//    ((CAShapeLayer *)self.layer).path = aPath.CGPath;
+//    ((CAShapeLayer *)self.layer).fillColor = [[UIColor colorWithRed:1.0f green:0.58f blue:0.21f alpha:1.0f] CGColor];
+
+
 
 }
 

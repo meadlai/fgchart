@@ -70,6 +70,7 @@ typedef NSString *(^FGLabelForVertical)(CGFloat value);
 
 
 - (void)setDataList:(NSArray *)date;
+//map<x,y>
 - (void)setDataMap:(NSDictionary *)date;
 - (void)reload:(CGFloat)animationDuration;
 

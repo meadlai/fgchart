@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "FGChart.h"
 #import "FGLineChart.h"
+#import "FGPieChart.h"
 #import "UIBezierPathDemo.h"
 
 #define UI_Padding_Top 30
@@ -25,8 +26,28 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self testLineChart];
+    [self testPieChar];
+//    [self testLineChart];
     [self testBezierLine];
+}
+
+- (void)testPieChar{
+    //
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+    [dic setObject:@"50" forKey:@"中国银行流动资金占有{p}%"];
+    [dic setObject:@"20" forKey:@"工商银行占有{p}%"];
+    [dic setObject:@"10" forKey:@"建设银行占有{p}%"];
+    [dic setObject:@"20" forKey:@"农业银行占有{p}%"];
+
+
+    //
+    FGPieChart *chart = [[FGPieChart alloc] init];
+    chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
+    //
+    [chart setDataMap:dic];
+    [self.view addSubview:chart];
+
+
 }
 
 - (void)testLineChart{
