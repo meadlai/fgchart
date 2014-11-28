@@ -70,7 +70,7 @@
     _animation = YES;
     _animationDuration = 1.3f;
     _bezierSmoothing = NO;
-    _bezierSmoothingTension = 2.0f;
+    _bezierSmoothingTension = 0.8f;
     //
     _touchInteraction = NO;
     //
@@ -263,8 +263,8 @@
                 middlePoint.x = (point.x - previousPoint.x) / 2;
                 middlePoint.y = (point.y - previousPoint.y) / 2;
             }
-            controlPoint[1].x = point.x + middlePoint.x * _bezierSmoothingTension;
-            controlPoint[1].y = point.y + middlePoint.y * _bezierSmoothingTension;
+            controlPoint[1].x = point.x - middlePoint.x * _bezierSmoothingTension;
+            controlPoint[1].y = point.y - middlePoint.y * _bezierSmoothingTension;
 
             //画线
             [path addCurveToPoint:point controlPoint1:controlPoint[0] controlPoint2:controlPoint[1]];

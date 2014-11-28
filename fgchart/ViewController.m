@@ -46,7 +46,7 @@
         r = abs(r);
         chartData[i] = [NSNumber numberWithInt:r + 100];
     }
-    
+//    chart.bezierSmoothing = NO;
     [chart setDataList:chartData];
     [self.view addSubview:chart];
 }
