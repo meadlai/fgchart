@@ -29,6 +29,11 @@
 
 @implementation FGPieChart
 
+#pragma mark lifecycle
++ (Class)layerClass {
+    return[CAShapeLayer class];
+}
+
 - (id)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
     if (self) {
@@ -131,8 +136,79 @@
 //    NSLog(@"color=%@",[[_colorList objectAtIndex:_colorIndex] description]);
     //
     _startPosition = endPosition;
+    
     //
+    CABasicAnimation* fadeAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fadeAnim.fromValue = [NSNumber numberWithFloat:0.0];
+    fadeAnim.toValue = [NSNumber numberWithFloat:1.0];
+    fadeAnim.duration = 2.0;
+//    fadeAnim.beginTime = _count;
+//    fadeAnim.speed = 0.5f;
+//    fadeAnim.removedOnCompletion = NO;
+//    fadeAnim.fillMode = kCAFillModeForwards;
+    [layer addAnimation:fadeAnim forKey:[NSString stringWithFormat:@"opacity%ld",(long)_count]];
+    
+    //
+    CABasicAnimation* theAnim = [CABasicAnimation animationWithKeyPath:@"position"];
+    theAnim.fromValue =[NSValue valueWithCGPoint:CGPointMake(_center.x-20, _center.y+20)];
+    theAnim.toValue = [NSValue valueWithCGPoint:layer.position];
+    theAnim.duration = 1.0;
+    //[layer addAnimation:theAnim forKey:@"AnimateFrame"];
+    
+    //
+    CATransition* transition = [CATransition animation];
+    transition.startProgress = 0;
+    transition.endProgress = 1.0;
+    transition.type = kCATransitionPush;
+    transition.subtype = kCATransitionFromRight;
+    transition.duration = 1.0;
+    //[layer addAnimation:transition forKey:@"transition"];
+    
+    //
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    animation.duration = 2; // 持续时间
+    animation.repeatCount = 1; // 重复次数
+    animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
+    animation.toValue = [NSNumber numberWithFloat:1 * M_PI]; // 终止角度
+    animation.removedOnCompletion = NO;
+    animation.fillMode = kCAFillModeForwards;
+    //加速度
+    animation.timingFunction =
+    [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
+    [layer addAnimation:animation forKey:@"rotate-layer"];
+
     return layer;
+}
+
+#pragma mark
+#pragma mark 事件处理
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    UITouch *touch   = [touches anyObject];
+    NSLog(@"##touchesBegan");
+    [self doRotation];
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+
+}
+
+- (void)doRotation{
+    CAShapeLayer *main = (CAShapeLayer*)self.layer;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    animation.duration = 2; // 持续时间
+    animation.repeatCount = 1; // 重复次数
+    animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
+    animation.toValue = [NSNumber numberWithFloat:1 * M_PI]; // 终止角度
+    animation.removedOnCompletion = NO;
+    animation.fillMode = kCAFillModeForwards;
+    //加速度
+    animation.timingFunction =
+    [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
+    [main addAnimation:animation forKey:@"rotate-layer"];
 }
 
 @end
