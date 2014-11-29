@@ -9,6 +9,10 @@
 #import "FGPieChart.h"
 #define INT_SCALE 3.6
 #define   DEGREES_TO_RADIANS(degrees)  ((M_PI * degrees)/ 180)
+#define UI_Padding_Top 30
+#define UI_Screen_width [UIScreen mainScreen].bounds.size.width
+
+#define UI_Screen_height [UIScreen mainScreen].bounds.size.height
 
 @interface FGPieChart (){
     NSMutableDictionary* _data;
@@ -20,6 +24,8 @@
     NSInteger _count;
     //计数器,颜色指标
     NSInteger _colorIndex;
+//    CAShapeLayer *_mainLayer;
+    UIView *_main;
 }
 
 //绘制一个扇形
@@ -65,6 +71,10 @@
 }
 
 - (void)setDataMap:(NSDictionary *)data{
+    _main = [[UIView alloc] init];
+    _main.frame = CGRectMake(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
+    [self addSubview:_main];
+
     _data = [NSMutableDictionary dictionaryWithDictionary:data];
     if ([self doValid] == NO) {
         return;
@@ -73,13 +83,8 @@
     for (id key in _data) {
         CGFloat percent = [[_data objectForKey:key]floatValue];
         CAShapeLayer *layer = [self renderPiece:percent];
-        if (_count != 3) {
-            NSLog(@"label = %@, percent = %f",key,percent);
-            [self.layer addSublayer:layer];
-        }else{
-            NSLog(@"##label = %@, percent = %f",key,percent);
-            [self.layer addSublayer:layer];
-        }
+        NSLog(@"##label = %@, percent = %f",key,percent);
+        [_main.layer addSublayer:layer];
         //
         _count ++;
     }
@@ -131,6 +136,7 @@
     [arc addArcWithCenter:_center radius:_radius startAngle:_startPosition endAngle:endPosition clockwise:YES];
     //回到中点
     [arc addLineToPoint:_center];
+    [arc closePath];
     layer.path = arc.CGPath;
     layer.fillColor = [[_colorList objectAtIndex:_colorIndex] CGColor];
 //    NSLog(@"color=%@",[[_colorList objectAtIndex:_colorIndex] description]);
@@ -142,27 +148,7 @@
     fadeAnim.fromValue = [NSNumber numberWithFloat:0.0];
     fadeAnim.toValue = [NSNumber numberWithFloat:1.0];
     fadeAnim.duration = 2.0;
-//    fadeAnim.beginTime = _count;
-//    fadeAnim.speed = 0.5f;
-//    fadeAnim.removedOnCompletion = NO;
-//    fadeAnim.fillMode = kCAFillModeForwards;
     [layer addAnimation:fadeAnim forKey:[NSString stringWithFormat:@"opacity%ld",(long)_count]];
-    
-    //
-    CABasicAnimation* theAnim = [CABasicAnimation animationWithKeyPath:@"position"];
-    theAnim.fromValue =[NSValue valueWithCGPoint:CGPointMake(_center.x-20, _center.y+20)];
-    theAnim.toValue = [NSValue valueWithCGPoint:layer.position];
-    theAnim.duration = 1.0;
-    //[layer addAnimation:theAnim forKey:@"AnimateFrame"];
-    
-    //
-    CATransition* transition = [CATransition animation];
-    transition.startProgress = 0;
-    transition.endProgress = 1.0;
-    transition.type = kCATransitionPush;
-    transition.subtype = kCATransitionFromRight;
-    transition.duration = 1.0;
-    //[layer addAnimation:transition forKey:@"transition"];
     
     //
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
@@ -175,17 +161,49 @@
     //加速度
     animation.timingFunction =
     [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
-    [layer addAnimation:animation forKey:@"rotate-layer"];
+//    [layer addAnimation:animation forKey:@"rotate-layer"];
 
+    layer.name = [NSString stringWithFormat:@"layer%ld",(long)_count];
+    
     return layer;
 }
 
 #pragma mark
 #pragma mark 事件处理
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    UITouch *touch   = [touches anyObject];
-    NSLog(@"##touchesBegan");
-    [self doRotation];
+    //UITouch *touch   = [touches anyObject];
+    UITouch *touch = [touches anyObject];
+    CALayer *hitLayer = [self layerForTouch:touch];
+    if (hitLayer) {
+        NSLog(@"##sublayers.count = %lu" ,(unsigned long)_main.layer.sublayers.count);
+        [self doRotation];
+    }
+}
+
+- (CALayer *)layerForTouch:(UITouch *)touch {
+    CGPoint location = [touch locationInView:_main];
+    
+        for (CAShapeLayer *ilayer in _main.layer.sublayers) {
+            BOOL hit = CGPathContainsPoint([ilayer path], NULL, location, ([ilayer fillRule] == kCAFillRuleEvenOdd));
+            if (hit) {
+                NSLog(@"location.x=%f ,location.y=%f",location.x,location.y);
+                NSLog(@"layer.name = %@",ilayer.name);
+                return ilayer;
+            }
+        }
+
+    
+//    监测点击事件
+//    location = [self convertPoint:location toView:_main];
+//    for (CALayer *ilayer in _main.layer.sublayers) {
+//        CALayer *hitPresentationLayer = [ilayer.presentationLayer hitTest:location];
+//        if (hitPresentationLayer) {
+//            NSLog(@"location.x=%f ,location.y=%f",location.x,location.y);
+//            //return hitPresentationLayer.modelLayer;
+//        }
+//    }
+    
+    return nil;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -197,18 +215,36 @@
 }
 
 - (void)doRotation{
-    CAShapeLayer *main = (CAShapeLayer*)self.layer;
+    
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    animation.delegate = self;
     animation.duration = 2; // 持续时间
     animation.repeatCount = 1; // 重复次数
     animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
-    animation.toValue = [NSNumber numberWithFloat:1 * M_PI]; // 终止角度
+    animation.toValue = [NSNumber numberWithFloat:0.5 * M_PI]; // 终止角度
     animation.removedOnCompletion = NO;
     animation.fillMode = kCAFillModeForwards;
     //加速度
     animation.timingFunction =
     [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
-    [main addAnimation:animation forKey:@"rotate-layer"];
+    //[_main.layer addAnimation:animation forKey:@"rotate-layer"];
+    //
+    float currentRotation = [(NSNumber*)[animation valueForKeyPath:@"transform.rotation.z"] floatValue];
+    NSLog(@"Rotation = %f",currentRotation);
+    
+    [UIView animateWithDuration:2.1 animations:^{
+        _main.transform = CGAffineTransformRotate(_main.transform,0.5 * M_PI);
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    } completion:^(BOOL finished) {
+        //
+    }];
+
+}
+
+-(void) animationDidStop:(CAAnimation *) animation finished:(bool) flag {
+//    sleep(2);
+//    CATransform3D rotate = CATransform3DRotate(_mainLayer.transform, 0.5* M_PI, 0.0f, 0.0f, 1.0f);
+//    _mainLayer.transform = rotate;
 }
 
 @end
