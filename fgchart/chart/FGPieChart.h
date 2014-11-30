@@ -15,6 +15,10 @@
 typedef NSString *(^FGLabelForTip)(CGFloat value);
 typedef UIView *(^FGViewForTip)(CGFloat value);
 
+/**
+ * 支持点击旋转,并把点中的区块,旋转到正下方<br>
+ * 所有区块绘画完毕,进行一次旋转调整.
+ **/
 @interface FGPieChart : UIView{
     
 }
@@ -30,6 +34,8 @@ typedef UIView *(^FGViewForTip)(CGFloat value);
 
 @property (nonatomic, readwrite) BOOL debug;
 @property (nonatomic, readwrite) BOOL ignoreError;
+@property (atomic, readwrite) BOOL running;
+
 
 
 @end

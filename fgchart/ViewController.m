@@ -28,7 +28,7 @@
     [super viewDidLoad];
     [self testPieChar];
 //    [self testLineChart];
-    [self testBezierLine];
+//    [self testBezierLine];
 }
 
 - (void)testPieChar{

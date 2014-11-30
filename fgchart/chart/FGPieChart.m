@@ -24,8 +24,12 @@
     NSInteger _count;
     //计数器,颜色指标
     NSInteger _colorIndex;
-//    CAShapeLayer *_mainLayer;
+    //绘图部分
     UIView *_main;
+    //首次调整弧度
+    CGFloat _temp;
+    //当前选中区块
+    NSInteger _index;
 }
 
 //绘制一个扇形
@@ -61,12 +65,14 @@
     //
     _colorList = [NSMutableArray arrayWithObjects:
                   [FGChart ColorLightBlue],
-                  [FGChart ColorYellow],
-                  [FGChart ColorGreen],
-                  [FGChart ColorPink],
-                  [FGChart ColorRed],
                   [FGChart ColorOrange],
+                  [FGChart ColorGreen],
+
+                  [FGChart ColorPink],
                   [FGChart ColorLightGray],
+
+                  [FGChart ColorYellow],
+                  [FGChart ColorRed],
                   nil];
 }
 
@@ -83,11 +89,13 @@
     for (id key in _data) {
         CGFloat percent = [[_data objectForKey:key]floatValue];
         CAShapeLayer *layer = [self renderPiece:percent];
-        NSLog(@"##label = %@, percent = %f",key,percent);
         [_main.layer addSublayer:layer];
         //
         _count ++;
     }
+    
+    //首次调整
+    [self doRotation:_temp];
     
 }
 
@@ -123,9 +131,6 @@
         _colorIndex = _count%_colorList.count;
     }
 
-    NSLog(@"_colorIndex = %ld",(long)_colorIndex);
-    NSLog(@"_count = %ld",(long)_count);
-
     //
     CAShapeLayer *layer = [CAShapeLayer layer];
     layer.frame = CGRectMake(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
@@ -136,34 +141,46 @@
     [arc addArcWithCenter:_center radius:_radius startAngle:_startPosition endAngle:endPosition clockwise:YES];
     //回到中点
     [arc addLineToPoint:_center];
-    [arc closePath];
+//    [arc closePath];
     layer.path = arc.CGPath;
     layer.fillColor = [[_colorList objectAtIndex:_colorIndex] CGColor];
 //    NSLog(@"color=%@",[[_colorList objectAtIndex:_colorIndex] description]);
     //
     _startPosition = endPosition;
     
-    //
+    //透明动画
     CABasicAnimation* fadeAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
     fadeAnim.fromValue = [NSNumber numberWithFloat:0.0];
     fadeAnim.toValue = [NSNumber numberWithFloat:1.0];
     fadeAnim.duration = 2.0;
     [layer addAnimation:fadeAnim forKey:[NSString stringWithFormat:@"opacity%ld",(long)_count]];
     
-    //
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-    animation.duration = 2; // 持续时间
-    animation.repeatCount = 1; // 重复次数
-    animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
-    animation.toValue = [NSNumber numberWithFloat:1 * M_PI]; // 终止角度
-    animation.removedOnCompletion = NO;
-    animation.fillMode = kCAFillModeForwards;
-    //加速度
-    animation.timingFunction =
-    [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
+    
+    //记录格式:layer:count:percent
+    //用于点击后进行判断,当前是哪个区块.
+    layer.name = [NSString stringWithFormat:@"layer:%ld:%f"
+                  ,(long)_count
+                  ,percent];
+    if(_count == 0){
+        //等于1/4-first/2
+        _temp  = DEGREES_TO_RADIANS((100/4-percent/2) * INT_SCALE);
+        _index = 0;
+    }
+    NSLog(@"_temp = %f, name = %@",(100/4-percent/2),layer.name);
+
+    //动画坐标,会影响真实坐标.
+//    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+//    animation.duration = 2; // 持续时间
+//    animation.repeatCount = 1; // 重复次数
+//    animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
+//    animation.toValue = [NSNumber numberWithFloat:_temp]; // 终止角度
+//    animation.removedOnCompletion = NO;
+//    animation.fillMode = kCAFillModeForwards;
+//    //加速度
+//    animation.timingFunction =
+//    [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
 //    [layer addAnimation:animation forKey:@"rotate-layer"];
 
-    layer.name = [NSString stringWithFormat:@"layer%ld",(long)_count];
     
     return layer;
 }
@@ -171,16 +188,33 @@
 #pragma mark
 #pragma mark 事件处理
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (_running) {
+        //动画正在运行
+        return;
+    }
+    
     //UITouch *touch   = [touches anyObject];
     UITouch *touch = [touches anyObject];
-    CALayer *hitLayer = [self layerForTouch:touch];
+    CAShapeLayer *hitLayer = [self layerForTouch:touch];
     if (hitLayer) {
-        NSLog(@"##sublayers.count = %lu" ,(unsigned long)_main.layer.sublayers.count);
-        [self doRotation];
+        NSLog(@"##hitLayer.name = %@" ,hitLayer.name);
+        NSArray *string = [hitLayer.name componentsSeparatedByString:@":"];
+        if (string.count == 3 && [string[0] isEqualToString:@"layer"]) {
+            //获取当前点中index
+            NSInteger current = [string[1] integerValue];
+            if (current ==_index) {
+                //点中相同区块.
+                return;
+            }
+            [self computeRadio:current];
+            _running = YES;
+            [self doRotation:_temp];
+        }
     }
 }
 
-- (CALayer *)layerForTouch:(UITouch *)touch {
+//获取点中的CALayer
+- (CAShapeLayer *)layerForTouch:(UITouch *)touch {
     CGPoint location = [touch locationInView:_main];
     
         for (CAShapeLayer *ilayer in _main.layer.sublayers) {
@@ -214,31 +248,66 @@
 
 }
 
-- (void)doRotation{
-    
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-    animation.delegate = self;
-    animation.duration = 2; // 持续时间
-    animation.repeatCount = 1; // 重复次数
-    animation.fromValue = [NSNumber numberWithFloat:0.0]; // 起始角度
-    animation.toValue = [NSNumber numberWithFloat:0.5 * M_PI]; // 终止角度
-    animation.removedOnCompletion = NO;
-    animation.fillMode = kCAFillModeForwards;
-    //加速度
-    animation.timingFunction =
-    [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
-    //[_main.layer addAnimation:animation forKey:@"rotate-layer"];
-    //
-    float currentRotation = [(NSNumber*)[animation valueForKeyPath:@"transform.rotation.z"] floatValue];
-    NSLog(@"Rotation = %f",currentRotation);
-    
+#pragma mark 动画操作
+//radio为弧度.
+- (void)doRotation:(CGFloat) radio{
     [UIView animateWithDuration:2.1 animations:^{
-        _main.transform = CGAffineTransformRotate(_main.transform,0.5 * M_PI);
+        _main.transform = CGAffineTransformRotate(_main.transform,radio);
         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
     } completion:^(BOOL finished) {
-        //
+        _running = NO;
+        //画龙点睛?画蛇添足?
+        [self doMovedown];
     }];
+}
 
+- (void)doMovedown{
+    int idx = 0;
+    for (CAShapeLayer *ilayer in _main.layer.sublayers) {
+        if (idx == _index) {
+            //点中区块
+            CABasicAnimation* animation = [CABasicAnimation animationWithKeyPath:@"position"];
+            
+            animation.fromValue = [NSValue valueWithCGPoint:CGPointMake(ilayer.position.x, ilayer.position.y)]; // 起始点
+            //TODO:偏移量计算,需要三角函数计算,忘记光了.
+            animation.toValue = [NSValue valueWithCGPoint:CGPointMake(ilayer.position.x+4, ilayer.position.y+1)]; // 终了点
+            animation.duration = 1.0;
+//            animation.removedOnCompletion = NO;
+//            animation.fillMode = kCAFillModeForwards;
+            [ilayer addAnimation:animation forKey:@"position_"];
+        }
+        idx ++;
+    }
+
+}
+
+#pragma mark
+#pragma mark 计算
+//计算区间弧度.
+- (CGFloat) computeRadio:(NSInteger)current{
+    NSInteger idx = 0;
+    _temp = 0;
+    for (id key in _data) {
+        CGFloat percent = [[_data objectForKey:key]floatValue];
+        if (current == idx || _index == idx) {
+            _temp = percent/2 + _temp;
+        }
+        if (current > _index && idx>_index && idx<current) {
+            _temp = percent + _temp;
+        }
+        if (current < _index && idx<_index && idx>current) {
+            _temp = percent + _temp;
+        }
+        idx++;
+    }
+    NSLog(@"$$ current =%ld, index =%ld, _temp = %f ",(long)current,(long)_index,_temp);
+    if (current > _index){
+        _temp = -DEGREES_TO_RADIANS(_temp * INT_SCALE);
+    }else{
+        _temp =  DEGREES_TO_RADIANS(_temp * INT_SCALE);
+    }
+    _index = current;
+    return _temp;
 }
 
 -(void) animationDidStop:(CAAnimation *) animation finished:(bool) flag {
