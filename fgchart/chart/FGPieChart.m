@@ -32,8 +32,11 @@
     NSInteger _index;
 }
 
-//绘制一个扇形
+//绘制一个扇区
 - (CAShapeLayer*)renderPiece:(CGFloat) percent;
+
+//画标签
+- (void)renderLabel;
 
 @end
 
@@ -97,6 +100,7 @@
     //首次调整
     [self doRotation:_temp];
     
+    [self renderLabel];
 }
 
 - (BOOL)doValid{
@@ -155,14 +159,19 @@
     fadeAnim.duration = 2.0;
     [layer addAnimation:fadeAnim forKey:[NSString stringWithFormat:@"opacity%ld",(long)_count]];
     
-    
-    //记录格式:layer:count:percent
+    //偏移量计算,当前分区/2.
+    CGFloat deltaPoint = DEGREES_TO_RADIANS(percent/2 * INT_SCALE) + _startPosition;
+    CGPoint delta = [self computeDelta:deltaPoint];
+
+    //记录格式:layer:count:delta.x:delta.y
+    //其中delta为动画偏移量
     //用于点击后进行判断,当前是哪个区块.
-    layer.name = [NSString stringWithFormat:@"layer:%ld:%f"
+    layer.name = [NSString stringWithFormat:@"layer:%ld:%f:%f"
                   ,(long)_count
-                  ,percent];
+                  ,delta.x,delta.y];
     if(_count == 0){
         //等于1/4-first/2
+        //计算首次旋转角度
         _temp  = DEGREES_TO_RADIANS((100/4-percent/2) * INT_SCALE);
         _index = 0;
     }
@@ -185,6 +194,38 @@
     return layer;
 }
 
+- (void) renderLabel{
+    int idx = 0;
+    CGFloat xx = self.bounds.size.width -50;
+    CGFloat yy = 16;
+    
+    for (id key in _data) {
+        NSNumber *val = [_data objectForKey:key];
+        if(idx < _colorList.count){
+            //饼数目少于颜色数量
+            _colorIndex = idx;
+        }else{
+            //饼数目大于颜色数量
+            _colorIndex = idx%_colorList.count;
+        }
+        UILabel *block = [[UILabel alloc] init];
+        block.frame = CGRectMake(xx, yy, 12, 12);
+        block.backgroundColor = _colorList[idx];
+        [self addSubview:block];
+        UILabel *text = [[UILabel alloc] init];
+        text.frame = CGRectMake(xx+15, yy, 200, 12);
+        text.backgroundColor = [UIColor whiteColor];
+        text.textColor = _colorList[idx];
+        text.text = key;
+        [self addSubview:text];
+
+        yy = yy + 18;
+        idx ++;
+    }
+
+    
+}
+
 #pragma mark
 #pragma mark 事件处理
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -193,13 +234,11 @@
         return;
     }
     
-    //UITouch *touch   = [touches anyObject];
     UITouch *touch = [touches anyObject];
     CAShapeLayer *hitLayer = [self layerForTouch:touch];
     if (hitLayer) {
-        NSLog(@"##hitLayer.name = %@" ,hitLayer.name);
         NSArray *string = [hitLayer.name componentsSeparatedByString:@":"];
-        if (string.count == 3 && [string[0] isEqualToString:@"layer"]) {
+        if (string.count == 4 && [string[0] isEqualToString:@"layer"]) {
             //获取当前点中index
             NSInteger current = [string[1] integerValue];
             if (current ==_index) {
@@ -240,14 +279,6 @@
     return nil;
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-
-}
-
 #pragma mark 动画操作
 //radio为弧度.
 - (void)doRotation:(CGFloat) radio{
@@ -256,21 +287,32 @@
         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
     } completion:^(BOOL finished) {
         _running = NO;
-        //画龙点睛?画蛇添足?
+        //
         [self doMovedown];
     }];
 }
 
 - (void)doMovedown{
+    //TODO:计算偏移量错误.
+    return;
     int idx = 0;
     for (CAShapeLayer *ilayer in _main.layer.sublayers) {
         if (idx == _index) {
+            
+            CGPoint delta = CGPointZero;
+            NSArray *string = [ilayer.name componentsSeparatedByString:@":"];
+            if (string.count == 4 && [string[0] isEqualToString:@"layer"]) {
+                delta.x = [string[2] floatValue];
+                delta.y = [string[3] floatValue];
+                NSLog(@"position.x=%f ,position.y=%f",ilayer.position.x,ilayer.position.y);
+                NSLog(@"delta.x=%f ,delta.y=%f",delta.x,delta.y);
+            }
             //点中区块
             CABasicAnimation* animation = [CABasicAnimation animationWithKeyPath:@"position"];
             
-            animation.fromValue = [NSValue valueWithCGPoint:CGPointMake(ilayer.position.x, ilayer.position.y)]; // 起始点
-            //TODO:偏移量计算,需要三角函数计算,忘记光了.
-            animation.toValue = [NSValue valueWithCGPoint:CGPointMake(ilayer.position.x+4, ilayer.position.y+1)]; // 终了点
+            animation.fromValue = [NSValue valueWithCGPoint:ilayer.position]; // 起始点
+            //TODO:偏移量计算,需要三角函数计算
+            animation.toValue = [NSValue valueWithCGPoint:delta]; // 终了点
             animation.duration = 1.0;
 //            animation.removedOnCompletion = NO;
 //            animation.fillMode = kCAFillModeForwards;
@@ -283,6 +325,42 @@
 
 #pragma mark
 #pragma mark 计算
+//计算移动偏移量
+- (CGPoint) computeDelta:(CGFloat)deltaPoint{
+    CGPoint  delta = CGPointZero;
+    CGFloat isin =  sinf(deltaPoint);
+    CGFloat icos =  cosf(deltaPoint);
+    NSLog(@"isin = %f, icos = %f",isin,icos);
+    CGFloat orginx = icos * _radius;
+    CGFloat orginy = isin * _radius;
+    NSLog(@"orginx = %f, orginy = %f",orginx,orginy);
+    //周长变长20
+    delta.x = icos * (_radius + 6);
+    delta.y = isin * (_radius + 6);
+    
+    //象限判断
+    if ( 0<= deltaPoint <= M_PI/2 ) {
+        //第1象限
+        delta.x = _radius + delta.x;
+        delta.y = _radius - delta.y;
+    }else if ( M_PI/2 < deltaPoint <= M_PI ) {
+        //第2象限
+        delta.x = _radius - delta.x;
+        delta.y = _radius - delta.y;
+    }else if ( M_PI <= deltaPoint <= (M_PI/2+M_PI) ) {
+        //第3象限
+        delta.x = _radius - delta.x;
+        delta.y = _radius + delta.y;
+    }else if ( (M_PI/2+M_PI) <= deltaPoint <= M_PI*2 ) {
+        //第4象限
+        delta.x = _radius + delta.x;
+        delta.y = _radius + delta.y;
+    }
+    
+    NSLog(@"deltax = %f, deltay = %f",delta.x,delta.y);
+    return delta;
+}
+
 //计算区间弧度.
 - (CGFloat) computeRadio:(NSInteger)current{
     NSInteger idx = 0;
@@ -300,7 +378,7 @@
         }
         idx++;
     }
-    NSLog(@"$$ current =%ld, index =%ld, _temp = %f ",(long)current,(long)_index,_temp);
+    NSLog(@"current =%ld, index =%ld, _temp = %f ",(long)current,(long)_index,_temp);
     if (current > _index){
         _temp = -DEGREES_TO_RADIANS(_temp * INT_SCALE);
     }else{

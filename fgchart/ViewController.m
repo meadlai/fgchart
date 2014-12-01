@@ -34,15 +34,16 @@
 - (void)testPieChar{
     //
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
-    [dic setObject:@"50" forKey:@"中国银行流动资金占有{p}%"];
+    [dic setObject:@"40" forKey:@"中国银行流动资金占有{p}%"];
     [dic setObject:@"20" forKey:@"工商银行占有{p}%"];
-    [dic setObject:@"10" forKey:@"建设银行占有{p}%"];
-    [dic setObject:@"20" forKey:@"农业银行占有{p}%"];
+    [dic setObject:@"25" forKey:@"建设银行占有{p}%"];
+    [dic setObject:@"15" forKey:@"农业银行占有{p}%"];
 
 
     //
     FGPieChart *chart = [[FGPieChart alloc] init];
     chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
+    chart.radius = 80;
     //
     [chart setDataMap:dic];
     [self.view addSubview:chart];
@@ -63,7 +64,7 @@
     };
     
     chart.labelHorizontal = ^(CGFloat item) {
-        return [NSString stringWithFormat:@"%lu",(unsigned long)item];
+        return [NSString stringWithFormat:@"当年收益%lu",(unsigned long)item];
     };
 
 
