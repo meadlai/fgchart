@@ -282,7 +282,7 @@
 #pragma mark 动画操作
 //radio为弧度.
 - (void)doRotation:(CGFloat) radio{
-    [UIView animateWithDuration:2.1 animations:^{
+    [UIView animateWithDuration:1.2f animations:^{
         _main.transform = CGAffineTransformRotate(_main.transform,radio);
         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
     } completion:^(BOOL finished) {
@@ -311,7 +311,6 @@
             CABasicAnimation* animation = [CABasicAnimation animationWithKeyPath:@"position"];
             
             animation.fromValue = [NSValue valueWithCGPoint:ilayer.position]; // 起始点
-            //TODO:偏移量计算,需要三角函数计算
             animation.toValue = [NSValue valueWithCGPoint:delta]; // 终了点
             animation.duration = 1.0;
 //            animation.removedOnCompletion = NO;

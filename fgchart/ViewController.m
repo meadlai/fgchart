@@ -27,7 +27,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self testPieChar];
-//    [self testLineChart];
+    [self testLineChart];
 //    [self testBezierLine];
 }
 
@@ -64,12 +64,12 @@
     };
     
     chart.labelHorizontal = ^(CGFloat item) {
-        return [NSString stringWithFormat:@"当年收益%lu",(unsigned long)item];
+        return [NSString stringWithFormat:@"%lu",(unsigned long)item];
     };
 
 
     //
-    chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top, UI_Screen_width-UI_Padding_Top*2,200);
+    chart.frame = CGRectMake(UI_Padding_Top, UI_Padding_Top*3+200, UI_Screen_width-UI_Padding_Top*2, 200);
     
     NSMutableArray* chartData = [NSMutableArray arrayWithCapacity:10];
 
